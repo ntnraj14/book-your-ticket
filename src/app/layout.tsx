@@ -2,6 +2,8 @@ import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
 
+import { PrimeReactProvider } from 'primereact/api';
+
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
@@ -16,7 +18,12 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body className={inter.className}>{children}</body>
+      <PrimeReactProvider>
+      <head>
+          <link id="theme-link" rel="stylesheet" href="./themes/lara-light-blue/theme.css" />
+        </head>
+        <body className={inter.className}>{children}</body>
+      </PrimeReactProvider>
     </html>
   );
 }
