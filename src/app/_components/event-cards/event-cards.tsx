@@ -1,15 +1,14 @@
 import { Card } from 'primereact/card';
 import { IEvent } from '@/app/_interfaces/event.interface';
-import { isArray } from 'util';
-
 interface EventCardsProps {
     eventList: IEvent[] | null;
-    onSendMessage: Function;
+    onCardClick: Function;
 }
 
-export default function EventCards(eventList: EventCardsProps, onSendMessage: Function) {
-    const listItems = eventList.eventList?.map((item, index) =>
-        <Card title={item.name} key={index} className='mt-4' onClick={() => onSendMessage(item)}>
+export default function EventCards(eventCardsProps: EventCardsProps) {
+
+    const listItems = eventCardsProps.eventList?.map((item, index) =>
+        <Card title={item.name} key={index} className='mt-4' onClick={() => eventCardsProps.onCardClick(item)}>
             <p className="m-0">
                 Lorem ipsum dolor sit amet, consectetur adipisicing elit. Inventore sed consequuntur error repudiandae 
                 numquam deserunt quisquam repellat libero asperiores earum nam nobis, culpa ratione quam perferendis esse, cupiditate neque quas!
