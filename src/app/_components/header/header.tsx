@@ -66,7 +66,11 @@ export default function Header(headerProps: HeaderProps) {
 
   const onCountrySelection = (value: Country) => {
     setSelectedCountry(value);
-    dispatch(getResourcesSuccess(value));
+  }
+  const onCountrySelect = (event: AutoCompleteSelectEvent) => {
+    setSelectedCountry(event.value);
+    dispatch(getResourcesSuccess(event.value));
+    headerProps.setEventList(event.value.events);
   }
   
   return (
@@ -80,7 +84,7 @@ export default function Header(headerProps: HeaderProps) {
                 suggestions={filteredCountries}
                 completeMethod={search}
                 onChange={(e: AutoCompleteChangeEvent) => onCountrySelection(e.value)}
-                onSelect={(event: AutoCompleteSelectEvent) => headerProps.setEventList(eventListData)}
+                onSelect={(event: AutoCompleteSelectEvent) => onCountrySelect(event)}
                 placeholder="Enter name of the City"
                 forceSelection
                 disabled={pathName === '/event-details'}
