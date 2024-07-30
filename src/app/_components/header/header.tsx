@@ -1,30 +1,35 @@
 'use client'
 
-import React, { useEffect, useState } from 'react';
+import React, { useContext, useEffect, useState } from 'react';
 
 import { AutoComplete, AutoCompleteChangeEvent, AutoCompleteCompleteEvent, AutoCompleteSelectEvent } from "primereact/autocomplete";
 
 import { Country } from '../../_interfaces/country.interface';
 import { CountryService } from '../../_lib/country-service';
 
-import { EventListService } from '../../_lib/event-list-service';
-
 // Import Redux-related functions and actions
 import { useSelector, useDispatch } from '../../_lib/store/store';
 import { getResourcesSuccess } from '../../_lib/store/slices/country-slice';
+import { getThemeSuccess } from '../../_lib/store/slices/theme-slice';
+
 import { usePathname } from 'next/navigation';
+
+import { PrimeReactContext } from 'primereact/api';
+
+import Image from 'next/image';
 
 interface HeaderProps {
     setEventList: Function;
 }
 
 export default function Header(headerProps: HeaderProps) {
-  const eventListData = EventListService.getEventList();
   const [countries, setCountries] = useState<Country[]>([]);
   const [selectedCountry, setSelectedCountry] = useState<Country | null>(null);
   const [filteredCountries, setFilteredCountries] = useState<Country[]>([]);
   const [noCountryFound, setNoCountryFound] = useState(false);
+  const [theme, setTheme] = useState('light');
   const pathName = usePathname();
+  let primeContext = useContext(PrimeReactContext);
 
     // Initialize useDispatch to dispatch Redux actions
     const dispatch = useDispatch();
@@ -32,11 +37,18 @@ export default function Header(headerProps: HeaderProps) {
     // Select the 'cardDetails' data from the Redux store using useSelector
     const { countryDetails } = useSelector((state) => state.country);
 
+    // Select the 'cardDetails' data from the Redux store using useSelector
+    const { themeDetails } = useSelector((state) => state.themeDetails);
+
   useEffect(() => {
-    CountryService.getCountries().then((data) => setCountries(data));
+    const data = CountryService.getCountries();
+    setCountries(data)
     if (countryDetails) {
       setSelectedCountry(countryDetails)
-  }
+    }
+    if (themeDetails) {
+      setTheme(themeDetails)
+    }
   }, []);
 
   const search = (event: AutoCompleteCompleteEvent) => {
@@ -72,26 +84,49 @@ export default function Header(headerProps: HeaderProps) {
     dispatch(getResourcesSuccess(event.value));
     headerProps.setEventList(event.value.events);
   }
+
+  const toggleTheme = () => {
+    const newTheme = theme === 'dark' ? 'light' : 'dark';
+    primeContext && primeContext.changeTheme && primeContext.changeTheme(`/themes/lara-${theme}-blue/theme.css`, `/themes/lara-${newTheme}-blue/theme.css`, 'theme-link')
+    setTheme(newTheme);
+    dispatch(getThemeSuccess(newTheme));
+};
   
   return (
-     <div>
-        <div className="border-y-2 p-3 border-slate-100 px-8">
+    <>
+     <div className='border-b-2 border-slate-100 flex items-center px-5'>
+        <Image src='/images/eventbrite.png' alt='eventbrite' width="120" height="24" />
+        <div className="p-3 px-4 mr-6">
             <div className='flex align-items-center'>
-                <span className="mr-2">Browsing events in</span>{" "}
+                <span className="mr-2" data-testid="browseEvents">Browsing events in</span>{" "}
                 <AutoComplete
-                field="name"
-                value={selectedCountry}
-                suggestions={filteredCountries}
-                completeMethod={search}
-                onChange={(e: AutoCompleteChangeEvent) => onCountrySelection(e.value)}
-                onSelect={(event: AutoCompleteSelectEvent) => onCountrySelect(event)}
-                placeholder="Enter name of the City"
-                forceSelection
-                disabled={pathName === '/event-details'}
+                  data-testid="autoComplete"
+                  field="name"
+                  value={selectedCountry}
+                  suggestions={filteredCountries}
+                  completeMethod={search}
+                  onChange={(e: AutoCompleteChangeEvent) => onCountrySelection(e.value)}
+                  onSelect={(event: AutoCompleteSelectEvent) => onCountrySelect(event)}
+                  placeholder="Enter name of the City"
+                  forceSelection
+                  disabled={pathName === '/event-details'}
+                  inputClassName='text-blue-600 font-medium'
+                  dropdown= {true}
                 />
             </div>
-            {noCountryFound && <div className='mt-2 text-sm text-red-500'>No country matches your search. Trying searching any other country.</div>}
+        </div>
+        <div className='mr-8 font-bold'>Find Events</div>
+        <div className='mr-8 font-bold'>Create Events</div>
+        <div className='mr-8 font-bold'>Find Your Tickets</div>
+        <div className='mr-8 font-bold'>Help Center</div>
+        <div className='mr-8 font-bold'>Log In</div>
+        <div className='mr-8 font-bold'>Sign Up</div>
+        <div className='font-bold p-2' onClick={toggleTheme}>
+          {theme === 'light' && <span className='pi pi-sun'></span>}
+          {theme === 'dark' && <span className='pi pi-moon'></span>}
         </div>
      </div>
+      {noCountryFound && <div className='text-sm text-red-500 ml-80'>No country matches your search. Trying searching any other country.</div>}
+    </>
   )
 }
